@@ -1,0 +1,9 @@
+.env
+poetry.lock
+pyproject.toml
+LICENSE
+.pre-commit-config.yaml
+requirements.txt
+contributing.md
+code_of_conduct.md
+OpenAI_Agent_Swarm.code-workspace
