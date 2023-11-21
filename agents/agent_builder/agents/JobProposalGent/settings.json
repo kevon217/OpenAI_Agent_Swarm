@@ -1,0 +1,12 @@
+{
+  "model": "gpt-4-1106-preview",
+  "description": "Job Proposal Generator Agent",
+  "temperature": 0.7,
+  "max_tokens": 2048,
+  "top_p": 1,
+  "frequency_penalty": 0.0,
+  "presence_penalty": 0.0,
+  "stop": ["\n\n"],
+  "tools": [{ "type": "code_interpreter" }],
+  "metadata": {}
+}
