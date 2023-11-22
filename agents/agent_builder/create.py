@@ -1,6 +1,7 @@
 import os
 import json
 from shared.openai_config import get_openai_client
+from agents.tool_maker.tool_updater import normalize_tool
 
 agents_path = "agents/agent_builder/agents"
 client = get_openai_client()
@@ -62,10 +63,14 @@ for agent_name in os.listdir(agents_path):
                             file=file_data, purpose="assistants"
                         )
                         files.append({"name": filename, "id": file_object.id})
+                # Extract requested tools from settings
+        requested_tools = settings.get("tools", [])
+        normalized_requested_tools = [normalize_tool(t) for t in requested_tools]
 
         print(agent_name)
         print("")
         print(instructions)
+        print(requested_tools)
         if files:
             print("")
             print(f"Files: {list(map(lambda x: x['name'], files))}")
@@ -76,7 +81,19 @@ for agent_name in os.listdir(agents_path):
             print(f"{agent_name} already exists... validating properties")
             update_model = existing_agent.model != settings["model"]
             update_instructions = existing_agent.instructions != instructions
-            # need to evaluate tools
+
+            # Check if tools need to be updated
+            existing_tools_set = {tool.type for tool in existing_agent.tools}
+            normalized_existing_tools = [
+                normalize_tool(t) for t in existing_agent.tools
+            ]
+
+            # Compare tools
+            update_tools = normalized_existing_tools != normalized_requested_tools
+
+            if update_tools:
+                update_params["tools"] = requested_tools
+                print(f"Updating {agent_name}'s tools")
 
             update_params = {}
 
@@ -97,6 +114,8 @@ for agent_name in os.listdir(agents_path):
                 if not any(tool.type == "retrieval" for tool in existing_agent.tools):
                     update_params["tools"] = existing_agent.tools
                     update_params["tools"].append({"type": "retrieval"})
+            if update_tools:
+                update_params["tools"] = requested_tools
 
             if len(update_params) != 0:
                 print(f"Updating {agent_name}'s { ','.join(update_params.keys()) }")
